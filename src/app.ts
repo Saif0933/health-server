@@ -1,7 +1,9 @@
-import express, {type Request, type Response } from 'express';
 import cors from 'cors';
-import authRoutes from './module/auth/route/auth.routes';
+import express, { type Request, type Response } from 'express';
 import { errorMiddleware } from './middlewares/error.middleware';
+import authRoutes from './module/auth/route/auth.routes';
+import gymGoalRoutes from './module/gym/gymGole/route/gymGoal.route';
+import foodScanRoutes from './module/gym/foodScan/route/foodScan.route';
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/gym', gymGoalRoutes);
+app.use('/api/scan', foodScanRoutes);
 
 
 
