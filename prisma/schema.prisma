@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum SkinType {
+  OILY
+  DRY
+  COMBINATION
+  SENSITIVE
+  NORMAL
+}
+
+enum ScanType {
+  FOOD
+  SKIN
+  PRODUCT
+}
+
+enum SenderType {
+  USER
+  AI
+}
+
+enum ModuleType {
+  GYMFITNESS
+  BEAUTICARE
+}
+
+// --- CORE MODELS ---
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile relationship
+  profile       Profile?
+
+  // Module Specific Goals
+  gymGoals      GymGoal[]
+  
+  // Health & Nutrition
+  nutritionLogs DailyNutritionLog[]
+  waterLogs     WaterLog[]
+  
+  // BeautiCare
+  skincareMetrics SkincareMetric[]
+  routineLogs     RoutineLog[]
+  productScans    ProductScan[]
+
+  // AI Assistant
+  chatRooms     ChatRoom[]
+
+  // Achievements
+  achievements  UserAchievement[]
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String?
+  avatarUrl   String?
+  gender      Gender?
+  age         Int?
+  height      Float?   // in cm
+  weight      Float?   // in kg
+  
+  // Beauty related
+  skinType    SkinType?
+  skinConcerns String[] // e.g. ["Acne", "Aging"]
+
+  // Settings
+  isDarkMode             Boolean @default(false)
+  isNotificationsEnabled Boolean @default(true)
+}
+
+// --- GYMFITNESS MODELS ---
+
+model GymGoal {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  calorieTarget     Int      @default(2200)
+  proteinTarget     Int      @default(150)
+  carbsTarget       Int      @default(250)
+  fatsTarget        Int      @default(70)
+  waterTarget       Int      @default(2500) // in ml
+  
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+}
+
+model DailyNutritionLog {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  date              DateTime @default(now())
+  
+  // Daily Totals (to avoid recalculating every time)
+  totalCalories     Int      @default(0)
+  totalProtein      Int      @default(0)
+  totalCarbs        Int      @default(0)
+  totalFats         Int      @default(0)
+  
+  meals             Meal[]
+
+  @@unique([userId, date])
+}
+
+model Meal {
+  id          String            @id @default(uuid())
+  logId       String
+  log         DailyNutritionLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+  
+  name        String
+  calories    Int
+  protein     Int
+  carbs       Int
+  fats        Int
+  time        DateTime          @default(now())
+  imageUrl    String?
+}
+
+model WaterLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  amount    Int      // in ml
+  timestamp DateTime @default(now())
+}
+
+// --- BEAUTICARE MODELS ---
+
+model SkincareMetric {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  date      DateTime @default(now())
+  hydration Float    // percentage
+  phLevel   Float
+  oiliness  Float    // percentage
+  
+  @@unique([userId, date])
+}
+
+model RoutineLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  date            DateTime @default(now())
+  stepsCompleted  Int
+  totalSteps      Int
+  complianceScore Float    // e.g. 0.85 (85%)
+}
+
+model ProductScan {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productName String
+  scanType    ScanType
+  safetyScore Int
+  ingredients Json      // Array of ingredient objects { name, score, risk }
+  timestamp   DateTime @default(now())
+}
+
+// --- AI ASSISTANT MODELS ---
+
+model ChatRoom {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  module    ModuleType
+  title     String?
+  messages  ChatMessage[]
+  createdAt DateTime   @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  roomId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  sender    SenderType
+  content   String
+  timestamp DateTime @default(now())
+}
+
+// --- GAMIFICATION ---
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  icon        String
+  category    ModuleType
+
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
