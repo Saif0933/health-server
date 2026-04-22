@@ -4,6 +4,8 @@ import { errorMiddleware } from './middlewares/error.middleware';
 import authRoutes from './module/auth/route/auth.routes';
 import foodScanRoutes from './module/gym/foodScan/route/foodScan.route';
 import gymGoalRoutes from './module/gym/gymGole/route/gymGoal.route';
+import beauticareRoutes from './module/beauticare/route/beauticare.route';
+
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/gym', gymGoalRoutes);
 app.use('/api/scan', foodScanRoutes);
+app.use('/api/beauticare', beauticareRoutes);
+
 
 
 
