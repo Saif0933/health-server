@@ -2,8 +2,8 @@ import cors from 'cors';
 import express, { type Request, type Response } from 'express';
 import { errorMiddleware } from './middlewares/error.middleware';
 import authRoutes from './module/auth/route/auth.routes';
-import gymGoalRoutes from './module/gym/gymGole/route/gymGoal.route';
 import foodScanRoutes from './module/gym/foodScan/route/foodScan.route';
+import gymGoalRoutes from './module/gym/gymGole/route/gymGoal.route';
 
 const app = express();
 

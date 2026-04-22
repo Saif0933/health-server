@@ -23,23 +23,24 @@ const getUserId = async (req: any): Promise<string> => {
   return userId;
 };
 
-// 1. Create a Product Scan
+// 1. Create and Analyze a Food Scan
 export const createScan = asyncHandler(async (req: Request, res: Response) => {
   const userId = await getUserId(req);
-  const { productName, scanType, safetyScore } = req.body;
+  const { imageUrl } = req.body;
 
-  if (!productName || !scanType || safetyScore === undefined) {
-    throw new AppError(400, "productName, scanType, and safetyScore are required.");
+  if (!imageUrl) {
+    throw new AppError(400, "Image URL is required for scanning.");
   }
 
-  const result = await foodScanService.createProductScan(userId, {
-    ...req.body,
-    scanType: req.body.scanType.toUpperCase()
-  });
+  // Step 1: Analyze image (Check if it's food + Get nutrition)
+  const analysisResult = await foodScanService.analyzeFoodImage(imageUrl);
+
+  // Step 2: Save the information
+  const result = await foodScanService.createProductScan(userId, analysisResult);
   
   return res
     .status(201)
-    .json(new ApiResponse(201, result, "Product scan saved successfully"));
+    .json(new ApiResponse(201, result, "Scan completed: Food identified and nutrients extracted."));
 });
 
 // 2. Get User Scan History
@@ -70,7 +71,7 @@ export const deleteScan = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id as string;
   if (!id) throw new AppError(400, "Scan ID is required.");
 
-  await foodScanService.getScanById(id); // Check existence
+  await foodScanService.getScanById(id);
   await foodScanService.deleteProductScan(id);
   
   return res

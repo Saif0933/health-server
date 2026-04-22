@@ -5,7 +5,6 @@ import { authMiddleware } from "../../../../middlewares/auth.middleware";
 const router = Router();
 
 // All gym goal routes are public for now
-// router.use(authMiddleware);
 
 // Goal Routes
 router.post("/goal", gymGoalController.setGoal);
