@@ -1,9 +1,9 @@
-import { type Request, type Response } from "express";
-import { asyncHandler } from "../../../../utils/asyncHandler";
-import { ApiResponse } from "../../../../utils/ApiResponse";
-import * as gymGoalService from "../service/gymGoal.service";
-import { AppError } from "../../../../utils/AppError";
+import { type Response } from "express";
 import { prisma } from "../../../../config/prisma";
+import { ApiResponse } from "../../../../utils/ApiResponse";
+import { AppError } from "../../../../utils/AppError";
+import { asyncHandler } from "../../../../utils/asyncHandler";
+import * as gymGoalService from "../service/gymGoal.service";
 
 // 1. Set or Update Gym Goal
 export const setGoal = asyncHandler(async (req: any, res: Response) => {

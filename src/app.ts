@@ -24,11 +24,6 @@ app.use('/api/scan', foodScanRoutes);
 app.use('/api/beauticare', beauticareRoutes);
 
 
-
-
-
-
-
 // Basic route to check if server is running
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Server is running successfully!' });
