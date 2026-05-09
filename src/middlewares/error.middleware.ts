@@ -1,25 +1,26 @@
-import { type NextFunction, type Request, type Response } from "express";
-import { AppError } from "../utils/AppError";
+import { ENV } from "../config/env";
+import { ErrorResponse } from "../utils/response.utils";
+import type{ Request, Response, NextFunction } from "express";
 
-export const errorMiddleware = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (err instanceof AppError) {
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  ENV.mode === "development" && console.log(err);
+
+  // Handle ErrorResponse custom class
+  if (err instanceof ErrorResponse) {
     return res.status(err.statusCode).json({
-      success: false,
       message: err.message,
+      error: err.statusText,
+      success: false,
     });
   }
 
-  // Handle other errors (Zod, Prisma, etc.)
-  console.error("ERROR 💥:", err);
+  // Handle generic errors
+  const statusCode = err.statusCode || err.status || 500;
+  const message = err.message || "Internal Server Error";
 
-  return res.status(500).json({
+  return res.status(statusCode).json({
+    message: message,
+    error: err.statusText || "INTERNAL_SERVER_ERROR",
     success: false,
-    message: "Internal Server Error",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 };

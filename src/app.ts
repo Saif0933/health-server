@@ -1,34 +1,34 @@
-import cors from 'cors';
-import express, { type Request, type Response } from 'express';
-import { errorMiddleware } from './middlewares/error.middleware';
-import authRoutes from './module/auth/route/auth.routes';
-import foodScanRoutes from './module/gym/foodScan/route/foodScan.route';
-import gymGoalRoutes from './module/gym/gymGole/route/gymGoal.route';
-import beauticareRoutes from './module/beauticare/route/beauticare.route';
-
+import express from "express";
+import cors from "cors";
+import { errorHandler } from "./middlewares/error.middleware";
+import router from "./routes";
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://zyra-ai-web.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/gym', gymGoalRoutes);
-app.use('/api/scan', foodScanRoutes);
-app.use('/api/beauticare', beauticareRoutes);
-
-
-// Basic route to check if server is running
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Server is running successfully!' });
+// Logging middleware (equivalent to logger())
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
 });
 
-app.use(errorMiddleware);
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "implemented ci cd", success: true });
+});
+
+app.use("/api/v1", router);
+
+// Error Handler
+app.use(errorHandler);
 
 export default app;
